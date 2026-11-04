@@ -1,0 +1,2410 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101b2b">
+<title>Zippy 0.1</title>
+<style>
+*{box-sizing:border-box}
+:root{
+ --bg:#101b2b;--panel:#1c2b3e;--panel2:#283c52;
+ --text:#f6f8ff;--muted:#91a4ba;--line:#ffffff14;
+ --accent:#43a5ff;--purple:#ac88ff;
+}
+html,body{margin:0;width:100%;height:100%;overflow:hidden}
+body{background:var(--bg);font-family:system-ui,Arial,sans-serif}
+button,input,textarea{font:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:active{transform:scale(.98)}
+button,input,textarea{outline:none}
+#app{
+ height:100dvh;display:flex;flex-direction:column;
+ background:var(--bg);color:var(--text);overflow:hidden;
+}
+#app.light{
+ --bg:#f4f7fc;--panel:#fff;--panel2:#e7eef8;
+ --text:#192a42;--muted:#72839b;--line:#192a4215;
+ --accent:#2386e8;--purple:#885ddd;
+}
+#app.pink{
+ --bg:#fff3f8;--panel:#fffafd;--panel2:#f7dfe9;
+ --text:#542c47;--muted:#987b8e;--line:#542c4715;
+ --accent:#d46ca6;--purple:#b97ad0;
+}
+#app.green{
+ --bg:#eff6f0;--panel:#fcfffc;--panel2:#dfece1;
+ --text:#294735;--muted:#758b7c;--line:#29473518;
+ --accent:#57946d;--purple:#658b76;
+}
+[hidden]{display:none!important}
+header{
+ min-height:64px;padding:10px 16px;display:flex;
+ align-items:center;gap:12px;flex-shrink:0;
+}
+header h1{font-size:23px;margin:0;flex:1;font-weight:750}
+.iconbtn{
+ border:0;background:transparent;color:var(--text);
+ width:42px;height:42px;border-radius:12px;
+ display:grid;place-items:center;
+}
+.i{
+ width:23px;height:23px;fill:none;stroke:currentColor;
+ stroke-width:1.8;stroke-linecap:round;
+ stroke-linejoin:round;display:block;flex-shrink:0;
+}
+main{
+ flex:1;min-height:0;overflow-y:auto;
+ padding:0 16px 125px;scrollbar-width:thin;
+}
+#bottom{
+ flex-shrink:0;position:fixed;bottom:18px;left:50%;
+ transform:translateX(-50%);width:91%;max-width:510px;
+ display:grid;grid-template-columns:repeat(4,1fr);
+ background:var(--panel);border:1px solid var(--line);
+ border-radius:40px;padding:6px;z-index:30;
+ box-shadow:0 10px 30px #0003;
+}
+.navbtn{
+ border:0;background:transparent;color:var(--muted);
+ border-radius:30px;display:flex;align-items:center;
+ flex-direction:column;gap:5px;padding:9px 2px;
+ font-size:11px;font-weight:600;
+}
+.navbtn.active{background:var(--panel2);color:var(--accent)}
+.navbtn .i{width:25px;height:25px}
+.card{
+ background:var(--panel);border-radius:18px;
+ overflow:hidden;margin:14px 0;
+}
+.cell{
+ width:100%;display:flex;align-items:center;gap:13px;
+ padding:15px;border:0;border-bottom:1px solid var(--line);
+ background:transparent;color:var(--text);text-align:left;
+ min-height:60px;
+}
+.cell:last-child{border-bottom:0}
+.cell .label{flex:1;min-width:0}
+.cell b{font-size:14px}
+.sub{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.5}
+.chevron{color:var(--muted);font-size:21px}
+.tile{
+ width:39px;height:39px;flex-shrink:0;
+ border-radius:12px;background:var(--panel2);
+ color:var(--accent);display:grid;place-items:center;
+}
+.tile .i{width:21px;height:21px}
+.primary{
+ border:0;border-radius:15px;background:var(--accent);
+ color:white;padding:15px 20px;font-weight:700;
+}
+.secondary{
+ border:0;border-radius:15px;background:var(--panel2);
+ color:var(--text);padding:14px 18px;
+}
+.wide{width:100%;margin:10px 0}
+.field{margin:15px 0}
+.field label{
+ display:block;color:var(--muted);font-size:13px;
+ margin:0 3px 8px;
+}
+.field input,.field textarea,.search{
+ width:100%;border:1px solid var(--line);
+ background:var(--panel);color:var(--text);
+ border-radius:15px;padding:15px;
+}
+.field textarea{min-height:100px;resize:vertical}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+.search{margin:8px 0 12px}
+.section-title{
+ margin:23px 7px 8px;color:var(--muted);
+ font-size:12px;font-weight:700;letter-spacing:.4px;
+ text-transform:uppercase;
+}
+.avatar{
+ width:54px;height:54px;flex-shrink:0;
+ display:grid;place-items:center;border-radius:50%;
+ background:linear-gradient(135deg,#64d3ba,#428bf2);
+ color:white;font-size:23px;font-weight:750;overflow:hidden;
+}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.avatar.large{width:146px;height:146px;font-size:56px}
+.avatar.medium{width:86px;height:86px;font-size:32px}
+.verified{
+ display:inline-grid;place-items:center;
+ width:20px;height:20px;border-radius:50%;
+ background:#9165f3;color:white;font-size:13px;
+ vertical-align:middle;
+}
+.status{
+ display:inline-flex;align-items:center;gap:7px;
+ color:var(--purple);background:var(--panel2);
+ padding:8px 13px;border-radius:20px;
+ font-size:12px;font-weight:700;margin-top:10px;
+}
+.status .i{width:16px;height:16px}
+.profile-head{
+ display:flex;flex-direction:column;align-items:center;
+ text-align:center;padding:18px 0 10px;
+}
+.profile-head h2{font-size:27px;margin:16px 0 5px}
+.profile-head.compact h2{font-size:22px;margin:12px 0 5px}
+.profile-actions{
+ display:grid;grid-template-columns:repeat(3,1fr);
+ gap:10px;margin:20px 3px;
+}
+.profile-actions button{
+ border:0;border-radius:16px;background:var(--panel);
+ color:var(--text);min-height:85px;
+ display:flex;flex-direction:column;align-items:center;
+ justify-content:center;gap:10px;font-size:12px;
+}
+.profile-actions .i{color:var(--accent);width:26px;height:26px}
+.phone-card{
+ background:var(--panel);border-radius:18px;
+ padding:19px 22px;margin:16px 0 25px;
+}
+.phone-card strong{font-size:19px;font-weight:550}
+.phone-card p{margin:8px 0 0;color:var(--muted);font-size:13px}
+.post-switch{
+ display:flex;width:max-content;max-width:100%;
+ background:var(--panel);border-radius:30px;
+ padding:5px;margin:20px auto;
+}
+.post-switch button{
+ border:0;background:transparent;color:var(--muted);
+ padding:11px 15px;border-radius:25px;font-size:13px;
+}
+.post-switch button.active{
+ background:var(--panel2);color:var(--accent);font-weight:700;
+}
+.empty{
+ display:flex;flex-direction:column;align-items:center;
+ justify-content:center;text-align:center;
+ padding:70px 15px 30px;color:var(--muted);
+}
+.empty .i{width:45px;height:45px;color:var(--accent)}
+.empty h3{color:var(--text);margin:19px 0 8px;font-size:19px}
+.empty p{font-size:14px;line-height:1.6;max-width:300px}
+.empty.small{padding:38px 15px}
+.post-grid{
+ display:grid;grid-template-columns:repeat(3,1fr);gap:4px;
+}
+.post-item{position:relative;aspect-ratio:1;overflow:hidden}
+.post-item img{width:100%;height:100%;object-fit:cover}
+.post-item button{
+ position:absolute;right:5px;top:5px;
+ background:#101b2bd9;color:white;border:0;
+ border-radius:9px;padding:6px;font-size:11px;
+}
+.chat-preview{
+ font-size:12px;color:var(--muted);margin-top:5px;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.chat-screen{
+ height:100%;display:flex;flex-direction:column;
+}
+.messages{flex:1;overflow:auto;padding:14px}
+.bubble{
+ width:max-content;max-width:84%;background:var(--panel2);
+ border-radius:16px;padding:11px 14px;margin:9px 0;
+ overflow-wrap:anywhere;
+}
+.bubble.mine{margin-left:auto;background:#305e8b;color:white}
+.bubble time{
+ display:block;text-align:right;font-size:10px;
+ opacity:.65;margin-top:6px;
+}
+.sendbar{
+ display:flex;gap:8px;padding:10px;background:var(--panel);
+}
+.sendbar input{
+ flex:1;min-width:0;border:0;background:var(--panel2);
+ color:var(--text);border-radius:13px;padding:12px;
+}
+.sendbar button{
+ border:0;border-radius:12px;background:var(--accent);
+ color:white;padding:0 16px;
+}
+.premium-hero{
+ padding:25px;border-radius:22px;margin:12px 0;
+ background:linear-gradient(135deg,#252444,#7051ad);
+ color:white;
+}
+.premium-hero h2{margin:13px 0;font-size:26px}
+.premium-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.premium-box{background:var(--panel);padding:17px;border-radius:16px}
+.premium-box .i{color:var(--purple);margin-bottom:12px}
+.premium-box b{display:block;font-size:13px}
+.premium-box p{font-size:12px;color:var(--muted)}
+.smallnote{font-size:12px;color:var(--muted);line-height:1.6}
+.auth{
+ position:fixed;inset:0;z-index:100;
+ display:flex;align-items:center;justify-content:center;
+ padding:24px;background:#101b2b;color:#f6f8ff;
+ overflow-y:auto;
+}
+.auth-card{width:100%;max-width:410px;text-align:center}
+.auth-logo{
+ width:90px;height:90px;margin:0 auto 25px;
+ border-radius:28px;background:#233e59;color:#51b2ff;
+ display:grid;place-items:center;font-size:46px;font-weight:800;
+}
+.auth h1{font-size:31px;margin:0 0 12px}
+.auth p{color:#94a9c0;line-height:1.6;font-size:15px}
+.auth-input{
+ width:100%;padding:17px;margin:7px 0;
+ border:1px solid #34506b;border-radius:15px;
+ background:#1c3045;color:white;font-size:16px;
+}
+.auth-input:focus{border-color:#4babff;box-shadow:0 0 0 3px #4babff22}
+.auth-button{
+ width:100%;padding:17px;margin:10px 0 0;
+ border:0;border-radius:15px;background:#359ef4;
+ color:white;font-weight:750;font-size:16px;
+}
+.auth-back{
+ display:block;border:0;background:none;color:#9eb3c8;
+ padding:10px 0;margin-bottom:20px;
+}
+.auth-message{color:#ffb8b8!important;font-size:13px!important;min-height:20px}
+.auth-view{display:none}
+.auth-view.active{display:block;animation:pageIn .25s ease both}
+@keyframes pageIn{
+ from{opacity:0;transform:translateY(9px)}
+ to{opacity:1;transform:translateY(0)}
+}
+#main.page-enter{animation:pageIn .2s ease}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+ <header id="header"></header>
+ <main id="main"></main>
+ <nav id="bottom"></nav>
+</div>
+
+<div class="auth" id="auth">
+ <div class="auth-card">
+
+  <section class="auth-view active" id="auth-welcome">
+   <div class="auth-logo">Z</div>
+   <h1>Здравствуйте!</h1>
+   <p>Добро пожаловать в Zippy.<br>
+   Общайтесь, делитесь моментами и оставайтесь на связи.</p>
+   <button class="auth-button" data-auth="choose">
+    Начнём общение
+   </button>
+  </section>
+
+  <section class="auth-view" id="auth-choose">
+   <button class="auth-back" data-auth="welcome">← Назад</button>
+   <div class="auth-logo">Z</div>
+   <h1>Добро пожаловать</h1>
+   <p>Создайте аккаунт или войдите в существующий.</p>
+   <button class="auth-button" data-auth="register">Зарегистрироваться</button>
+   <button class="auth-button" data-auth="login">Войти</button>
+  </section>
+
+  <section class="auth-view" id="auth-register">
+   <button class="auth-back" data-auth="choose">← Назад</button>
+   <h1>Регистрация</h1>
+   <p>Создайте аккаунт Zippy</p>
+   <form id="registerForm">
+    <input class="auth-input" name="name" placeholder="Ваше имя"
+      maxlength="50" autocomplete="name" required>
+    <input class="auth-input" name="phone" type="tel"
+      placeholder="Номер телефона: +7..."
+      autocomplete="tel" required>
+    <input class="auth-input" name="password" type="password"
+      placeholder="Придумайте пароль (от 8 символов)"
+      minlength="8" autocomplete="new-password" required>
+    <button class="auth-button" type="submit">Продолжить</button>
+   </form>
+   <p class="smallnote">Тестовый аккаунт сохраняется только на этом устройстве.
+   Подтверждение номера пока не подключено.</p>
+  </section>
+
+  <section class="auth-view" id="auth-login">
+   <button class="auth-back" data-auth="choose">← Назад</button>
+   <h1>Вход в Zippy</h1>
+   <p>Введите номер телефона и пароль</p>
+   <form id="loginForm">
+    <input class="auth-input" name="phone" type="tel"
+      placeholder="Номер телефона: +7..."
+      autocomplete="tel" required>
+    <input class="auth-input" name="password" type="password"
+      placeholder="Пароль" autocomplete="current-password" required>
+    <button class="auth-button" type="submit">Войти</button>
+   </form>
+  </section>
+
+  <p class="auth-message" id="authMessage" role="status"></p>
+ </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+const icons={
+back:'<path d="M19 12H5m7-7-7 7 7 7"/>',
+chats:'<path d="M20 11a8 8 0 0 1-8 8H6l-4 3V11a9 9 0 0 1 18 0Z"/><path d="M7 10h10M7 14h7"/>',
+contacts:'<circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6m1 3a5 5 0 0 1 3 5"/>',
+settings:'<path d="M9.7 3.2h4.6l.6 2.3 2 1.2 2.3-.7 2.3 4-1.8 1.8v2.4l1.8 1.8-2.3 4-2.3-.7-2 1.2-.6 2.3H9.7l-.6-2.3-2-1.2-2.3.7-2.3-4 1.8-1.8v-2.4L2.5 10l2.3-4 2.3.7 2-1.2Z"/><circle cx="12" cy="12" r="3.1"/>',
+profile:'<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',
+edit:'<path d="M12 20h9M4 17l-.5 4 4-.5L20 8l-3.5-3.5L4 17Z"/>',
+camera:'<path d="M4 7h4l2-3h4l2 3h4v13H4V7Z"/><circle cx="12" cy="13" r="4"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',
+switch:'<path d="M4 7h16l-4-4m4 4-4 4M20 17H4l4-4m-4 4 4 4"/>',
+lock:'<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 10h18c0-2-3-3-3-10ZM10 22h4"/>',
+palette:'<circle cx="12" cy="12" r="10"/><circle cx="7" cy="10" r="1"/><circle cx="12" cy="6" r="1"/><circle cx="17" cy="10" r="1"/>',
+storage:'<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 4 18 4 18 0V5M3 12c0 4 18 4 18 0"/>',
+globe:'<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c-6 5-6 15 0 20M12 2c6 5 6 15 0 20"/>',
+crown:'<path d="m2 7 5 4 5-7 5 7 5-4-2 13H4L2 7Z"/><path d="M4 22h16"/>',
+shield:'<path d="M12 2 4 5v7c0 5 3 8 8 10 5-2 8-5 8-10V5Z"/><path d="m9 12 2 2 4-4"/>',
+image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="2"/><path d="m3 18 6-6 4 4 3-3 5 5"/>',
+folder:'<path d="M3 6h7l2 3h9v11H3V6Z"/>',
+info:'<circle cx="12" cy="12" r="10"/><path d="M12 11v6M12 7h.01"/>',
+send:'<path d="m22 2-7 20-4-9-9-4 20-7ZM11 13 22 2"/>',
+users:'<circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5"/>',
+bolt:'<path d="M13 2 4 13h7l-1 9 10-12h-7V2Z"/>',
+search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>'
+};
+const ico=n=>`<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${icons[n]||icons.info}</svg>`;
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({
+ "&":"&amp;","<":"&lt;",">":"&gt;",
+ '"':"&quot;","'":"&#39;"
+}[c]));
+
+const STORE="zippy_fixed_v01";
+const AUTH_STORE="zippy_local_auth_v01";
+const SESSION_STORE="zippy_local_session_v01";
+
+const defaults={
+ theme:"dark",language:"ru",active:"personal",
+ profiles:{
+  personal:{name:"Григорий ♡",phone:"",bio:"Привет! Я в Zippy",avatar:"",posts:[],archive:[]},
+  owner:{name:"Григорий",phone:"",bio:"",avatar:"",posts:[],archive:[]}
+ },
+ contacts:{personal:[],owner:[]},
+ chats:{personal:[],owner:[]}
+};
+
+function clone(v){return JSON.parse(JSON.stringify(v))}
+function read(key,fallback){
+ try{return JSON.parse(localStorage.getItem(key))??fallback}
+ catch(e){return fallback}
+}
+function write(key,value){
+ try{localStorage.setItem(key,JSON.stringify(value));return true}
+ catch(e){alert("Не удалось сохранить данные. Проверьте память устройства.");return false}
+}
+let data=read(STORE,clone(defaults));
+for(const id of ["personal","owner"]){
+ if(!data.profiles?.[id])data.profiles[id]=clone(defaults.profiles[id]);
+ data.profiles[id].posts??=[];
+ data.profiles[id].archive??=[];
+ data.chats??={};
+ data.contacts??={};
+ data.chats[id]??=[];
+ data.contacts[id]??=[];
+}
+function save(){return write(STORE,data)}
+const me=()=>data.profiles[data.active];
+const owner=()=>data.active==="owner";
+const chats=()=>data.chats[data.active];
+const contacts=()=>data.contacts[data.active];
+
+let tab="chats",page="",history=[],chatIndex=0,postTab="posts";
+const app=$("app"),main=$("main"),header=$("header"),bottom=$("bottom");
+
+function avatar(p,size=""){
+ return `<div class="avatar ${size}">${
+ p.avatar?`<img src="${p.avatar}" alt="">`:esc((p.name||"Z")[0])
+ }</div>`;
+}
+function badge(){
+ return owner()?'<span class="verified" title="Владелец Zippy">✓</span>':"";
+}
+function status(){
+ return owner()?`<span class="status">${ico("bolt")} Владелец Zippy</span>`:"";
+}
+function row(icon,title,action,subtitle=""){
+ return `<button class="cell" data-action="${action}">
+ <span class="tile">${ico(icon)}</span>
+ <span class="label"><b>${title}</b>
+ ${subtitle?`<div class="sub">${subtitle}</div>`:""}</span>
+ <span class="chevron">›</span></button>`;
+}
+function head(title,back=false,right=""){
+ header.innerHTML=`${back?`<button class="iconbtn" data-action="back">${ico("back")}</button>`:""}
+ <h1>${title}</h1>${right}`;
+}
+function nav(){
+ const tabs=[
+ ["chats","Чаты"],["contacts","Контакты"],
+ ["settings","Настройки"],["profile","Профиль"]
+ ];
+ bottom.innerHTML=tabs.map(([id,label])=>
+ `<button class="navbtn ${tab===id?"active":""}" data-tab="${id}">
+ ${ico(id)}<span>${label}</span></button>`).join("");
+ bottom.hidden=page==="chatview";
+}
+function empty(icon,title,desc,small=false){
+ return `<div class="empty ${small?"small":""}">
+ ${ico(icon)}<h3>${title}</h3><p>${desc}</p></div>`;
+}
+function go(p){
+ history.push(page||tab);page=p;render();
+}
+function back(){
+ const previous=history.pop()||tab;
+ if(["chats","contacts","settings","profile"].includes(previous)){
+  tab=previous;page="";
+ }else page=previous;
+ render();
+}
+function setTab(id){
+ tab=id;page="";history=[];render();
+}
+function render(){
+ app.className=data.theme;
+ nav();
+ main.style.padding="";
+ let html="";
+ if(page==="chatview"){
+  const c=chats()[chatIndex];
+  head(esc(c?.name||"Чат"),true);
+  main.style.padding="0";
+  html=`<div class="chat-screen">
+  <div class="messages" id="messages">
+  ${(c?.messages||[]).map(m=>
+   `<div class="bubble mine">${esc(m.text)}
+   <time>${esc(m.time)}</time></div>`).join("")}
+  </div>
+  <form class="sendbar" id="sendForm">
+  <input id="messageInput" placeholder="Сообщение…" required>
+  <button type="submit">${ico("send")}</button>
+  </form></div>`;
+ }else{
+ switch(page||tab){
+ case "chats":
+  head("Zippy",false,`<button class="iconbtn" data-action="search">${ico("search")}</button>`);
+  html=`<input class="search" id="chatSearch" placeholder="Поиск чатов…">
+  <div id="chatList"></div>
+  <button class="primary wide" data-action="newChat">+ Новый чат</button>`;
+  break;
+ case "contacts":
+  head("Контакты");
+  html=`<input class="search" id="contactSearch" placeholder="Поиск контактов…">
+  <div class="card">${row("plus","Добавить контакт","newContact")}</div>
+  <div id="contactList"></div>`;
+  break;
+ case "settings":
+  head("Настройки");
+  html=`<div class="profile-head compact">
+   ${avatar(me(),"medium")}
+   <h2>${esc(me().name)} ${badge()}</h2>
+   <div class="sub">${esc(me().phone)}</div>${status()}
+   </div>
+   <div class="card">
+   ${row("profile","Аккаунт","account")}
+   ${row("lock","Конфиденциальность","privacy")}
+   ${row("bell","Уведомления","notifications")}
+   ${row("palette","Оформление","appearance")}
+   ${row("chats","Настройки чатов","chatsettings")}
+   ${row("storage","Память и данные","storage")}
+   ${row("globe","Язык","language")}
+   </div>
+   <div class="card">
+   ${row("crown","Zippy Premium","premium")}
+   ${row("info","О приложении","about")}
+   </div>`;
+  break;
+ case "profile":
+  head("Профиль");
+  html=`<div class="profile-head">
+   ${avatar(me(),"large")}
+   <h2>${esc(me().name)} ${badge()}</h2>
+   <div class="sub">в сети</div>${status()}
+   </div>
+   <div class="profile-actions">
+   <button data-action="photo">${ico("camera")}Выбрать фото</button>
+   <button data-action="edit">${ico("edit")}Изменить</button>
+   <button data-tab="settings">${ico("settings")}Настройки</button>
+   </div>
+   <div class="phone-card">
+   <strong>${esc(me().phone||"Номер не указан")}</strong>
+   <p>Телефон</p></div>
+   <div class="post-switch">
+   <button data-post-tab="posts" class="${postTab==="posts"?"active":""}">Публикации</button>
+   <button data-post-tab="archive" class="${postTab==="archive"?"active":""}">Архив публикаций</button>
+   </div>
+   <div id="postsArea"></div>
+   ${owner()?`<div class="card">${row("shield","Центр разработчика","admin")}</div>`:""}
+   <div class="card">${row("switch","Другой профиль","accounts")}</div>`;
+  break;
+ case "accounts":
+  head("Другой профиль",true);
+  html=`<div class="card">${Object.entries(data.profiles).map(([id,p])=>
+  `<button class="cell" data-account="${id}">
+  ${avatar(p)}
+  <span class="label"><b>${esc(p.name)}
+  ${id==="owner"?'<span class="verified">✓</span>':""}</b>
+  <div class="sub">${esc(p.phone||"Локальный профиль")}</div></span>
+  <span>${data.active===id?"✓":"○"}</span></button>`).join("")}</div>
+  <p class="smallnote">Переключение профилей работает только в этой локальной демонстрации.</p>`;
+  break;
+ case "account":
+  head("Аккаунт",true);
+  html=`<div class="card">
+  ${row("edit","Редактировать профиль","edit")}
+  ${row("switch","Другой профиль","accounts")}
+  </div>
+  <div class="card">${row("lock","Выйти из приложения","logout")}</div>`;
+  break;
+ case "edit":
+  head("Редактировать профиль",true);
+  html=`<form id="editForm">
+  <div class="field"><label>Имя</label>
+  <input name="name" value="${esc(me().name)}" required maxlength="50"></div>
+  <div class="field"><label>О себе</label>
+  <textarea name="bio" maxlength="250">${esc(me().bio)}</textarea></div>
+  <button class="primary wide">Сохранить</button></form>`;
+  break;
+ case "appearance":
+  head("Оформление",true);
+  html=`<div class="section-title">Бесплатные темы</div>
+  <div class="card">${[
+   ["dark","Dark Navy","#101b2b"],
+   ["light","Light","#f4f7fc"],
+   ["pink","Pink","#f4b7d2"],
+   ["green","Green","#94ba9d"]
+  ].map(([id,name,color])=>
+  `<button class="cell" data-theme="${id}">
+  <span style="width:33px;height:33px;border-radius:50%;background:${color};border:1px solid var(--line)"></span>
+  <span class="label">${name}</span>
+  <span>${data.theme===id?"✓":""}</span></button>`).join("")}</div>`;
+  break;
+ case "language":
+  head("Язык",true);
+  html=`<div class="card">${[
+   ["ru","Русский"],["en","English"],["zh","中文"],
+   ["ja","日本語"],["pt","Português"]
+  ].map(([id,name])=>
+  `<button class="cell" data-language="${id}">
+  <span class="label">${name}</span>
+  <span>${data.language===id?"✓":""}</span></button>`).join("")}</div>
+  <p class="smallnote">Перевод всего интерфейса добавим в следующих обновлениях.</p>`;
+  break;
+ case "premium":
+  head("Zippy Premium",true);
+  html=`<div class="premium-hero">${ico("crown")}
+  <h2>Zippy Premium</h2>
+  <p>Больше возможностей. Твой стиль.</p></div>
+  <div class="premium-grid">${[
+   ["palette","Эксклюзивные темы"],
+   ["profile","Анимированные аватары"],
+   ["chats","Расшифровка голосовых"],
+   ["bolt","Zippy AI"]
+  ].map(([ic,title])=>
+  `<div class="premium-box">${ico(ic)}<b>${title}</b>
+  <p>Планируется в будущих версиях</p></div>`).join("")}</div>
+  <div class="card" style="padding:18px">
+  <b>Расшифровка голосовых — план</b>
+  <p>Free: 15 в неделю</p><p>Premium: безлимитно</p></div>`;
+  break;
+ case "admin":
+  head("Центр разработчика",true);
+  html=owner()?`<div class="card">
+  ${row("users","Пользователи","users")}
+  ${row("shield","Управление ролями","roles")}
+  ${row("lock","Ограничения","restrictions")}
+  ${row("info","Жалобы","reports")}
+  </div><p class="smallnote">Пока это демонстрация интерфейса. Серверное управление пользователями ещё не подключено.</p>`:
+  empty("lock","Доступ ограничен","");
+  break;
+ case "users":
+  head("Пользователи",true);
+  html=`<div class="card">${Object.entries(data.profiles).map(([id,p])=>
+  `<div class="cell">${avatar(p)}<span class="label">
+  <b>${esc(p.name)}</b><div class="sub">Локальный профиль</div>
+  </span></div>`).join("")}</div>`;
+  break;
+ case "newChat":
+  head("Новый чат",true);
+  html=`<form id="newChatForm">
+  <div class="field"><label>Название чата</label>
+  <input name="name" required maxlength="60"></div>
+  <button class="primary wide">Создать чат</button></form>`;
+  break;
+ case "newContact":
+  head("Новый контакт",true);
+  html=`<form id="newContactForm">
+  <div class="field"><label>Имя</label><input name="name" required></div>
+  <div class="field"><label>Номер телефона</label>
+  <input name="phone" type="tel"></div>
+  <button class="primary wide">Добавить контакт</button></form>`;
+  break;
+ case "about":
+  head("О приложении",true);
+  html=`<div class="empty">${ico("bolt")}
+  <h3>Zippy</h3><p>Версия 0.1</p>
+  <p>Локальная демонстрация мессенджера.
+  Настоящая отправка сообщений между устройствами
+  появится после подключения сервера.</p></div>`;
+  break;
+ default:
+  const titles={
+   privacy:"Конфиденциальность",
+   notifications:"Уведомления",
+   chatsettings:"Настройки чатов",
+   storage:"Память и данные",
+   roles:"Управление ролями",
+   restrictions:"Ограничения",
+   reports:"Жалобы"
+  };
+  head(titles[page]||"Zippy",true);
+  html=empty("info",titles[page]||"Zippy",
+   "Этот раздел появится в следующих обновлениях.");
+ }
+ }
+ main.innerHTML=html;
+ main.scrollTop=0;
+ if(!page&&tab==="chats")renderChats();
+ if(!page&&tab==="contacts")renderContacts();
+ if(!page&&tab==="profile")renderPosts();
+}
+
+function renderChats(query=""){
+ const target=$("chatList");if(!target)return;
+ const list=chats().map((c,i)=>({...c,index:i}))
+ .filter(c=>c.name.toLowerCase().includes(query.toLowerCase()));
+ target.innerHTML=list.length?`<div class="card">
+ ${list.map(c=>`<button class="cell" data-chat="${c.index}">
+ <span class="avatar">${esc(c.name[0]||"Z")}</span>
+ <span class="label"><b>${esc(c.name)}</b>
+ <div class="chat-preview">${esc(c.messages.at(-1)?.text||"Новый чат")}</div>
+ </span></button>`).join("")}</div>`:
+ empty("chats","Пока здесь тихо…",
+ "Создайте первый чат. Сообщения пока сохраняются только на этом устройстве.",true);
+}
+function renderContacts(query=""){
+ const target=$("contactList");if(!target)return;
+ const list=contacts().filter(c=>
+ c.name.toLowerCase().includes(query.toLowerCase()));
+ target.innerHTML=list.length?`<div class="card">
+ ${list.map(c=>`<div class="cell">
+ <span class="avatar">${esc(c.name[0]||"?")}</span>
+ <span class="label"><b>${esc(c.name)}</b>
+ <div class="sub">${esc(c.phone)}</div></span></div>`).join("")}</div>`:
+ empty("contacts","Контактов пока нет","Добавьте первый контакт.",true);
+}
+function renderPosts(){
+ const area=$("postsArea");if(!area)return;
+ const list=me()[postTab]||[];
+ if(!list.length){
+  area.innerHTML=empty(
+   postTab==="posts"?"image":"folder",
+   "Пока здесь пусто",
+   postTab==="posts"?
+   "Здесь появятся ваши фотографии и публикации.":
+   "Здесь будут храниться архивные публикации.",true
+  )+(postTab==="posts"?
+  `<button class="primary wide" data-action="addPost">+ Создать публикацию</button>`:"");
+  return;
+ }
+ area.innerHTML=`<div class="post-grid">
+ ${list.map((src,i)=>`<div class="post-item">
+ <img src="${src}" alt="Публикация">
+ <button data-post-action="${postTab==="posts"?"archive":"restore"}"
+ data-index="${i}">${postTab==="posts"?"В архив":"Вернуть"}</button>
+ </div>`).join("")}</div>
+ ${postTab==="posts"?
+ `<button class="primary wide" data-action="addPost">+ Создать публикацию</button>`:""}`;
+}
+function pickImage(callback){
+ const input=document.createElement("input");
+ input.type="file";input.accept="image/*";
+ input.onchange=()=>{
+  const file=input.files?.[0];if(!file)return;
+  if(file.size>1500000){
+   alert("Выберите изображение меньше 1,5 МБ.");return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>callback(reader.result);
+  reader.readAsDataURL(file);
+ };
+ input.click();
+}
+
+document.addEventListener("click",async e=>{
+ const tabButton=e.target.closest("[data-tab]");
+ if(tabButton){setTab(tabButton.dataset.tab);return}
+ const theme=e.target.closest("[data-theme]");
+ if(theme){data.theme=theme.dataset.theme;save();render();return}
+ const language=e.target.closest("[data-language]");
+ if(language){
+  data.language=language.dataset.language;save();render();return;
+ }
+ const account=e.target.closest("[data-account]");
+ if(account){
+  data.active=account.dataset.account;save();setTab("profile");return;
+ }
+ const postButton=e.target.closest("[data-post-tab]");
+ if(postButton){
+  postTab=postButton.dataset.postTab;renderPosts();
+  document.querySelectorAll("[data-post-tab]").forEach(b=>
+   b.classList.toggle("active",b.dataset.postTab===postTab));
+  return;
+ }
+ const postAction=e.target.closest("[data-post-action]");
+ if(postAction){
+  const from=postAction.dataset.postAction==="archive"?"posts":"archive";
+  const to=from==="posts"?"archive":"posts";
+  const index=Number(postAction.dataset.index);
+  const item=me()[from].splice(index,1)[0];
+  if(item)me()[to].push(item);
+  save();renderPosts();return;
+ }
+ const chat=e.target.closest("[data-chat]");
+ if(chat){chatIndex=Number(chat.dataset.chat);go("chatview");return}
+ const button=e.target.closest("[data-action]");
+ if(!button)return;
+ const action=button.dataset.action;
+ if(action==="back"){back();return}
+ if(action==="photo"){
+  pickImage(src=>{me().avatar=src;save();render()});return;
+ }
+ if(action==="addPost"){
+  pickImage(src=>{
+   me().posts.push(src);
+   if(!save())me().posts.pop();
+   renderPosts();
+  });return;
+ }
+ if(action==="search"){$("chatSearch")?.focus();return}
+ if(action==="logout"){
+  if(confirm("Выйти из Zippy на этом устройстве?")){
+   localStorage.removeItem(SESSION_STORE);
+   $("auth").hidden=false;showAuth("choose");
+  }
+  return;
+ }
+ go(action);
+});
+
+document.addEventListener("input",e=>{
+ if(e.target.id==="chatSearch")renderChats(e.target.value);
+ if(e.target.id==="contactSearch")renderContacts(e.target.value);
+});
+
+document.addEventListener("submit",e=>{
+ if(!["editForm","newChatForm","newContactForm","sendForm"].includes(e.target.id))return;
+ e.preventDefault();
+ const form=e.target;
+ if(form.id==="editForm"){
+  const f=new FormData(form);
+  me().name=String(f.get("name")||"").trim()||me().name;
+  me().bio=String(f.get("bio")||"");
+  save();setTab("profile");
+ }
+ if(form.id==="newChatForm"){
+  const name=String(new FormData(form).get("name")||"").trim();
+  if(!name)return;
+  chats().push({name,messages:[]});
+  save();chatIndex=chats().length-1;go("chatview");
+ }
+ if(form.id==="newContactForm"){
+  const f=new FormData(form);
+  const name=String(f.get("name")||"").trim();
+  if(!name)return;
+  contacts().push({name,phone:String(f.get("phone")||"")});
+  save();setTab("contacts");
+ }
+ if(form.id==="sendForm"){
+  const input=$("messageInput");
+  const text=input.value.trim();if(!text)return;
+  chats()[chatIndex].messages.push({
+   text,time:new Date().toLocaleTimeString("ru",{
+    hour:"2-digit",minute:"2-digit"
+   })
+  });
+  save();render();
+  const box=$("messages");if(box)box.scrollTop=box.scrollHeight;
+ }
+});
+
+/* Локальная тестовая регистрация */
+function normalizePhone(value){
+ let p=String(value).replace(/[^\d+]/g,"");
+ if(/^8\d{10}$/.test(p))p="+7"+p.slice(1);
+ else if(/^7\d{10}$/.test(p))p="+"+p;
+ return p;
+}
+function showAuth(id){
+ document.querySelectorAll(".auth-view").forEach(el=>
+ el.classList.toggle("active",el.id==="auth-"+id));
+ $("authMessage").textContent="";
+}
+function authError(message){
+ $("authMessage").textContent=message;
+}
+function openApp(){
+ $("auth").hidden=true;
+ setTab("chats");
+}
+document.querySelectorAll("[data-auth]").forEach(button=>{
+ button.addEventListener("click",()=>showAuth(button.dataset.auth));
+});
+
+/*
+  Для локального теста используем случайную соль
+  и хеш пароля. Это не замена серверной авторизации.
+*/
+function randomHex(bytes=16){
+ const arr=new Uint8Array(bytes);
+ crypto.getRandomValues(arr);
+ return Array.from(arr,b=>b.toString(16).padStart(2,"0")).join("");
+}
+async function passwordHash(password,salt){
+ if(!crypto.subtle){
+  throw new Error("Безопасное хранение пароля недоступно в этом предпросмотре. Откройте приложение через HTTPS или localhost.");
+ }
+ const encoder=new TextEncoder();
+ const key=await crypto.subtle.importKey(
+  "raw",encoder.encode(password),"PBKDF2",false,["deriveBits"]
+ );
+ const bits=await crypto.subtle.deriveBits({
+  name:"PBKDF2",salt:encoder.encode(salt),
+  iterations:120000,hash:"SHA-256"
+ },key,256);
+ return Array.from(new Uint8Array(bits),
+  b=>b.toString(16).padStart(2,"0")).join("");
+}
+$("registerForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+ const form=e.currentTarget;
+ const f=new FormData(form);
+ const name=String(f.get("name")||"").trim();
+ const phone=normalizePhone(f.get("phone"));
+ const password=String(f.get("password")||"");
+ if(!name){authError("Введите имя.");return}
+ if(!/^\+[1-9]\d{7,14}$/.test(phone)){
+  authError("Введите номер в формате +79991234567.");return;
+ }
+ if(password.length<8){
+  authError("Пароль должен содержать не менее 8 символов.");return;
+ }
+ const existing=read(AUTH_STORE,null);
+ if(existing){
+  authError("На этом устройстве уже есть тестовый аккаунт. Нажмите «Назад» и выберите «Войти».");return;
+ }
+ const button=form.querySelector("button");
+ button.disabled=true;button.textContent="Создаём аккаунт…";
+ try{
+  const salt=randomHex();
+  const hash=await passwordHash(password,salt);
+  if(!write(AUTH_STORE,{name,phone,salt,hash}))return;
+  if(!write(SESSION_STORE,{phone}))return;
+  data.profiles.personal.name=name;
+  data.profiles.personal.phone=phone;
+  data.active="personal";
+  save();openApp();
+ }catch(error){authError(error.message||"Не удалось создать аккаунт.")}
+ finally{button.disabled=false;button.textContent="Продолжить"}
+});
+$("loginForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+ const form=e.currentTarget;
+ const f=new FormData(form);
+ const phone=normalizePhone(f.get("phone"));
+ const password=String(f.get("password")||"");
+ const account=read(AUTH_STORE,null);
+ if(!account){authError("Сначала зарегистрируйтесь.");return}
+ if(phone!==account.phone){authError("Неверный номер телефона.");return}
+ const button=form.querySelector("button");
+ button.disabled=true;button.textContent="Входим…";
+ try{
+  const hash=await passwordHash(password,account.salt);
+  if(hash!==account.hash){
+   authError("Неверный пароль.");return;
+  }
+  if(write(SESSION_STORE,{phone}))openApp();
+ }catch(error){authError(error.message||"Ошибка входа.")}
+ finally{button.disabled=false;button.textContent="Войти"}
+});
+
+render();
+const account=read(AUTH_STORE,null);
+const session=read(SESSION_STORE,null);
+if(account&&session?.phone===account.phone)openApp();
+else showAuth("welcome");
+
+})();
+</script>
+</body>
+</html>
+
+<!-- ZIPPY 0.2 — ПРАВА НА ПУБЛИКАЦИЮ -->
+<style>
+.zp-permissions{
+ background:var(--panel,#1c2b3e);
+ border-radius:16px;
+ padding:16px;
+ margin:12px 0;
+}
+.zp-person{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:12px;
+ padding:12px 0;
+ border-bottom:1px solid #ffffff20;
+}
+.zp-person:last-child{border:0}
+.zp-switch{
+ width:46px;height:26px;
+ accent-color:#8c6bf1;
+}
+.zp-input{
+ width:100%;
+ padding:13px;
+ border:1px solid #ffffff25;
+ border-radius:12px;
+ background:var(--panel2,#283c52);
+ color:var(--text,#fff);
+ margin:10px 0;
+}
+.zp-button{
+ background:var(--accent,#43a5ff);
+ color:#fff;border:0;
+ padding:12px 16px;
+ border-radius:12px;
+ font-weight:700;
+}
+</style>
+
+<script>
+(function(){
+"use strict";
+
+const KEY="zippy_channels_v02";
+const APP_KEY="zippy_fixed_v01";
+const AUTH_KEY="zippy_local_auth_v01";
+
+const read=(key,fallback)=>{
+ try{
+  return JSON.parse(localStorage.getItem(key))??fallback;
+ }catch(e){return fallback}
+};
+
+function save(data){
+ try{
+  localStorage.setItem(KEY,JSON.stringify(data));
+  return true;
+ }catch(e){
+  alert("Ошибка сохранения");
+  return false;
+ }
+}
+
+function account(){
+ const app=read(APP_KEY,{});
+ return app.active==="owner"?"owner":"personal";
+}
+
+function userId(){
+ if(account()==="owner")return "owner";
+ const auth=read(AUTH_KEY,{});
+ return String(auth.phone||"personal")
+  .replace(/\D/g,"");
+}
+
+function getOfficial(){
+ const data=read(KEY,{channels:[]});
+ return {
+  data,
+  channel:data.channels.find(
+   c=>c.id==="zippy-official"
+  )
+ };
+}
+
+function canPost(c){
+ if(!c)return false;
+
+ if(c.owner===account())return true;
+
+ if(c.id!=="zippy-official")return false;
+
+ return (c.postPermissions||[])
+  .includes(userId());
+}
+
+function esc(value){
+ return String(value??"")
+ .replace(/[&<>"']/g,c=>({
+  "&":"&amp;",
+  "<":"&lt;",
+  ">":"&gt;",
+  '"':"&quot;",
+  "'":"&#39;"
+ }[c]));
+}
+
+function renderPermissions(){
+ const screen=document.getElementById("zc-screen");
+ const body=document.getElementById("zc-body");
+ const title=document.getElementById("zc-title");
+
+ if(!screen||!body||!title)return;
+ if(!screen.classList.contains("open"))return;
+ if(title.textContent!=="Official")return;
+
+ const {channel}=getOfficial();
+ if(!channel)return;
+
+ body.querySelector("#zp-panel")?.remove();
+
+ const owner=account()==="owner";
+ const panel=document.createElement("div");
+
+ panel.id="zp-panel";
+ panel.className="zp-permissions";
+
+ const allowed=channel.postPermissions||[];
+
+ if(owner){
+  panel.innerHTML=`
+   <h3>💜 Права на публикацию</h3>
+   <p>Только выбранные тобой пользователи
+   могут публиковать посты.</p>
+
+   <div class="zp-person">
+    <b>👑 Owner</b>
+    <span>Всегда разрешено</span>
+   </div>
+
+   ${allowed.map(id=>`
+    <div class="zp-person">
+     <span>${esc(id)}</span>
+     <label>
+      <input type="checkbox"
+       class="zp-switch"
+       data-zp-user="${esc(id)}"
+       checked>
+     </label>
+    </div>
+   `).join("")}
+
+   <input id="zp-user"
+    class="zp-input"
+    placeholder="Номер пользователя">
+
+   <button class="zp-button"
+    id="zp-grant">
+    + Разрешить публикацию
+   </button>
+  `;
+ }else{
+  panel.innerHTML=`
+   <h3>Права на публикацию</h3>
+   <p>${canPost(channel)?
+    "Вам разрешено публиковать посты.":
+    "Публикация доступна только выбранным пользователям."
+   }</p>
+  `;
+ }
+
+ body.appendChild(panel);
+}
+
+document.addEventListener("click",e=>{
+ if(e.target.id!=="zp-grant")return;
+ if(account()!=="owner")return;
+
+ const input=document.getElementById("zp-user");
+ const id=String(input?.value||"").replace(/\D/g,"");
+
+ if(!id){
+  alert("Введите номер пользователя");
+  return;
+ }
+
+ const {data,channel}=getOfficial();
+ if(!channel)return;
+
+ channel.postPermissions??=[];
+
+ if(!channel.postPermissions.includes(id)){
+  channel.postPermissions.push(id);
+  if(save(data))renderPermissions();
+ }
+});
+
+document.addEventListener("change",e=>{
+ const input=e.target.closest("[data-zp-user]");
+ if(!input||account()!=="owner")return;
+
+ const id=input.dataset.zpUser;
+ const {data,channel}=getOfficial();
+ if(!channel)return;
+
+ channel.postPermissions=(channel.postPermissions||[])
+  .filter(x=>x!==id);
+
+ if(save(data))renderPermissions();
+});
+
+const body=document.getElementById("zc-body");
+
+if(body){
+ let busy=false;
+
+ new MutationObserver(()=>{
+  if(busy)return;
+  busy=true;
+
+  queueMicrotask(()=>{
+   busy=false;
+   renderPermissions();
+  });
+ }).observe(body,{childList:true});
+}
+
+window.ZippyPostPermissions={
+ canPost,
+ userId
+};
+
+})();
+</script>
+<!-- END ZIPPY POST PERMISSIONS -->
+
+<!-- ZIPPY 0.2 — VISUAL POLISH & PREMIUM -->
+<style>
+/* Единая геометрия интерфейса */
+:root{
+ --z-radius:18px;
+ --z-gap:14px;
+ --z-online:#49a8ff;
+ --z-online-bg:rgba(73,168,255,.11);
+}
+
+/* Цвет статуса под тему */
+body[data-theme="dark"],
+body.dark,
+body.theme-dark{
+ --z-online:#49a8ff;
+ --z-online-bg:rgba(73,168,255,.11);
+}
+body[data-theme="green"],
+body.green,
+body.theme-green{
+ --z-online:#436d3e;
+ --z-online-bg:rgba(67,109,62,.12);
+}
+body[data-theme="pink"],
+body.pink,
+body.theme-pink{
+ --z-online:#b95280;
+ --z-online-bg:rgba(185,82,128,.11);
+}
+body[data-theme="light"],
+body.light,
+body.theme-light{
+ --z-online:#2684d8;
+ --z-online-bg:rgba(38,132,216,.1);
+}
+
+.zippy-online{
+ color:var(--z-online)!important;
+ font-weight:650!important;
+}
+.zippy-offline{
+ color:var(--muted,#91a4ba)!important;
+ font-weight:400!important;
+}
+.zippy-online-pill{
+ display:inline-flex;
+ align-items:center;
+ gap:6px;
+ padding:5px 10px;
+ border-radius:99px;
+ background:var(--z-online-bg);
+ color:var(--z-online);
+ font-size:12px;
+ font-weight:700;
+}
+.zippy-online-pill::before{
+ content:"";
+ width:7px;height:7px;
+ border-radius:50%;
+ background:currentColor;
+}
+
+/* Ровные карточки и отступы */
+.cell,
+.zc-card,
+.cp-card,
+.zp-permissions,
+.zc-admin-section{
+ border-radius:var(--z-radius)!important;
+}
+
+.cell{
+ transition:background .15s ease,
+            transform .15s ease;
+}
+.cell:active{
+ transform:scale(.992);
+}
+
+button,input,textarea,select{
+ font-family:inherit;
+}
+
+button{
+ -webkit-tap-highlight-color:transparent;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible{
+ outline:2px solid var(--accent,#43a5ff);
+ outline-offset:2px;
+}
+
+input,textarea{
+ max-width:100%;
+}
+
+textarea{
+ resize:vertical;
+}
+
+#main,
+#zc-body,
+.cp-content{
+ overflow-wrap:break-word;
+}
+
+#main{
+ padding-bottom:calc(90px + env(safe-area-inset-bottom,0px));
+}
+
+#zc-body{
+ padding-bottom:calc(35px + env(safe-area-inset-bottom,0px));
+}
+
+#zc-head{
+ min-height:64px;
+}
+
+#zc-head h2{
+ overflow:hidden;
+ text-overflow:ellipsis;
+ white-space:nowrap;
+}
+
+.zc-card,
+.zc-post,
+.zp-permissions{
+ box-shadow:0 3px 15px rgba(0,0,0,.035);
+}
+
+.zc-item{
+ min-height:56px;
+}
+
+.zc-btn,
+.zp-button,
+.zc-admin-add{
+ min-height:44px;
+}
+
+.zc-field,
+.zp-input,
+.zc-admin-input{
+ font-size:16px;
+ line-height:1.4;
+}
+
+/* Предотвращение горизонтального сдвига */
+#main,
+#zc-screen,
+#zc-body{
+ max-width:100%;
+}
+
+@media(max-width:380px){
+ #zc-body{padding-left:12px;padding-right:12px}
+ .zc-card{padding:13px}
+ .zc-avatar{width:46px;height:46px}
+ .zc-name{font-size:15px}
+}
+
+/* Уважение настройки уменьшения анимации */
+@media(prefers-reduced-motion:reduce){
+ .cell{transition:none}
+}
+</style>
+
+<script>
+(function(){
+"use strict";
+
+const APP_KEY="zippy_fixed_v01";
+const AUTH_KEY="zippy_local_auth_v01";
+
+function read(key,fallback){
+ try{
+  return JSON.parse(localStorage.getItem(key))??fallback;
+ }catch(e){
+  return fallback;
+ }
+}
+
+function appState(){
+ return read(APP_KEY,{});
+}
+
+function isOwner(){
+ return appState().active==="owner";
+}
+
+function isPremium(){
+ const app=appState();
+ if(isOwner())return true;
+
+ return app.premium?.personal===true ||
+        app.personal?.premium===true ||
+        app.profiles?.personal?.premium===true;
+}
+
+/*
+ Статус Premium должен браться из настоящего
+ профиля после подключения сервера.
+ Здесь используется локальная модель Zippy.
+*/
+
+/* Определяем активную тему */
+function detectTheme(){
+ const app=appState();
+
+ const candidates=[
+  document.body.dataset.theme,
+  document.documentElement.dataset.theme,
+  app.theme,
+  app.settings?.theme
+ ];
+
+ const classes=(
+  document.body.className+" "+
+  document.documentElement.className
+ ).toLowerCase();
+
+ for(const item of candidates){
+  const value=String(item||"").toLowerCase();
+  if(value.includes("green")||value.includes("matcha"))
+   return "green";
+  if(value.includes("pink")||value.includes("rose"))
+   return "pink";
+  if(value.includes("light"))
+   return "light";
+  if(value.includes("dark"))
+   return "dark";
+ }
+
+ if(classes.includes("green")||classes.includes("matcha"))
+  return "green";
+ if(classes.includes("pink")||classes.includes("rose"))
+  return "pink";
+ if(classes.includes("light"))
+  return "light";
+
+ return "dark";
+}
+
+function syncTheme(){
+ const theme=detectTheme();
+ const colors={
+  dark:["#49a8ff","rgba(73,168,255,.11)"],
+  green:["#436d3e","rgba(67,109,62,.12)"],
+  pink:["#b95280","rgba(185,82,128,.11)"],
+  light:["#2684d8","rgba(38,132,216,.10)"]
+ };
+ const [color,bg]=colors[theme];
+ document.documentElement.style
+  .setProperty("--z-online",color);
+ document.documentElement.style
+  .setProperty("--z-online-bg",bg);
+}
+
+/*
+ Стилизация существующих текстовых статусов.
+ Не меняем содержание сообщений и полей ввода.
+*/
+function styleStatuses(){
+ const selectors=[
+  ".sub",
+  ".status",
+  ".user-status",
+  ".contact-status",
+  ".profile-status",
+  "[data-status]"
+ ];
+
+ const elements=document.querySelectorAll(
+  selectors.join(",")
+ );
+
+ elements.forEach(el=>{
+  if(el.children.length>0)return;
+
+  const value=(el.textContent||"")
+   .trim().toLowerCase();
+
+  el.classList.remove(
+   "zippy-online","zippy-offline"
+  );
+
+  if(value==="в сети"||value==="online"){
+   el.classList.add("zippy-online");
+  }else if(
+   value==="не в сети"||
+   value==="offline"||
+   value==="был(а) недавно"||
+   value==="был недавно"||
+   value==="была недавно"
+  ){
+   el.classList.add("zippy-offline");
+  }
+ });
+}
+
+/*
+ Скрываем только рекламную карточку Premium.
+ Сам статус Premium и управление подпиской
+ должны оставаться доступными.
+*/
+function hidePremiumPromo(){
+ const premium=isPremium();
+
+ document.querySelectorAll(
+  "[data-premium-promo],.premium-promo,"+
+  "#premiumPromo,#premium-promo"
+ ).forEach(el=>{
+  el.hidden=premium;
+  el.style.display=premium?"none":"";
+ });
+
+ /*
+  Для старого интерфейса без специальных
+  классов ищем рекламную карточку по тексту.
+  Не трогаем кнопки с информацией о подписке.
+ */
+ const cells=document.querySelectorAll(
+  "#main .cell,#main .card,"+
+  "#main .settings-card"
+ );
+
+ cells.forEach(el=>{
+  const text=(el.textContent||"")
+   .replace(/\s+/g," ").trim().toLowerCase();
+
+  const promotional=
+   text.includes("zippy premium") &&
+   (
+    text.includes("подключ")||
+    text.includes("оформ")||
+    text.includes("купить")||
+    text.includes("получить")||
+    text.includes("попробовать")
+   );
+
+  if(!promotional)return;
+
+  el.hidden=premium;
+  el.style.display=premium?"none":"";
+ });
+}
+
+/* Синхронизация после перерисовки экранов */
+let scheduled=false;
+
+function updateUI(){
+ if(scheduled)return;
+ scheduled=true;
+
+ requestAnimationFrame(()=>{
+  scheduled=false;
+  syncTheme();
+  styleStatuses();
+  hidePremiumPromo();
+ });
+}
+
+const observer=new MutationObserver(updateUI);
+
+observer.observe(document.body,{
+ childList:true,
+ subtree:true,
+ attributes:true,
+ attributeFilter:["class","data-theme"],
+ characterData:true
+});
+
+document.addEventListener("click",updateUI);
+document.addEventListener("change",updateUI);
+
+window.addEventListener("storage",updateUI);
+
+window.ZippyVisualUpdate={
+ refresh:updateUI,
+ isPremium,
+ isOwner
+};
+
+updateUI();
+
+})();
+</script>
+<!-- END ZIPPY VISUAL UPDATE -->
+
+<style>
+/* Zippy — плавные анимации */
+@media (prefers-reduced-motion: no-preference) {
+  .cell, .zc-card, .zc-btn, .zp-button,
+  .zc-item, button {
+    transition:
+      background-color .22s ease,
+      color .22s ease,
+      border-color .22s ease,
+      box-shadow .22s ease,
+      transform .22s ease,
+      opacity .22s ease;
+  }
+
+  .cell:active,
+  .zc-btn:active,
+  .zp-button:active,
+  button:active {
+    transform: scale(.97);
+  }
+
+  .zc-card, .zc-post {
+    animation: zippyAppear .28s ease-out both;
+  }
+
+  #zc-screen.open {
+    animation: zippyScreenIn .25s ease-out both;
+  }
+
+  @keyframes zippyAppear {
+    from {
+      opacity: 0;
+      transform: translateY(9px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes zippyScreenIn {
+    from {
+      opacity: 0;
+      transform: translateX(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+}
+
+/* При уменьшении движения сохраняем интерфейс
+   без лишних перемещений */
+@media (prefers-reduced-motion: reduce) {
+  .cell, .zc-card, .zc-btn, .zp-button {
+    transition: background-color .15s ease,
+                color .15s ease;
+  }
+}
+</style>
+
+<!-- ZIPPY 0.2 — PROFESSIONAL UI -->
+<style>
+:root {
+  --zp-radius: 14px;
+  --zp-ease: cubic-bezier(.2,.8,.2,1);
+}
+
+/* Общая аккуратность */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+  letter-spacing: -.01em;
+}
+
+button, input, textarea, select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:disabled {
+  cursor: default;
+  opacity: .48;
+}
+
+h1, h2, h3 {
+  letter-spacing: -.025em;
+  line-height: 1.2;
+}
+
+h1 { font-weight: 750; }
+h2 { font-weight: 720; }
+h3 { font-weight: 680; }
+
+/* Более естественные списки */
+.cell {
+  min-height: 62px;
+  border-radius: var(--zp-radius) !important;
+  padding: 12px 14px;
+  gap: 12px;
+}
+
+.cell .label {
+  min-width: 0;
+  flex: 1;
+}
+
+.cell .label b {
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.cell .sub {
+  font-size: 12px;
+  line-height: 1.45;
+  margin-top: 3px;
+}
+
+.cell .chevron {
+  opacity: .5;
+  font-size: 19px;
+}
+
+/* Карточки без тяжёлых теней */
+.zc-card,
+.cp-card,
+.zp-permissions,
+.zc-admin-section {
+  border-radius: 16px !important;
+  box-shadow: none !important;
+}
+
+.zc-card {
+  padding: 15px !important;
+  margin: 9px 0 !important;
+}
+
+.zc-post {
+  border-radius: 15px !important;
+  box-shadow: none !important;
+  padding: 15px !important;
+  line-height: 1.55;
+}
+
+/* Аватары */
+.zc-avatar {
+  border-radius: 50%;
+  font-weight: 700;
+  letter-spacing: -.04em;
+}
+
+/* Кнопки */
+.zc-btn,
+.zp-button,
+.zc-admin-add {
+  min-height: 44px;
+  border-radius: 12px !important;
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+/* Поля */
+.zc-field,
+.zp-input,
+.zc-admin-input {
+  border-radius: 12px !important;
+  font-size: 16px;
+  line-height: 1.5;
+  padding: 13px 14px;
+}
+
+/* Заголовок каналов */
+#zc-head {
+  min-height: 60px;
+  padding: 12px 15px;
+}
+
+#zc-head h2 {
+  font-size: 19px;
+  font-weight: 700;
+}
+
+#zc-body {
+  padding: 12px 15px
+    calc(32px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Статусы */
+.zippy-online {
+  color: var(--z-online, #49a8ff) !important;
+  font-weight: 600 !important;
+}
+
+.zippy-offline {
+  color: var(--muted, #91a4ba) !important;
+  font-weight: 400 !important;
+}
+
+/* Более спокойная зелёная тема */
+body[data-theme="green"],
+body[data-theme="matcha"],
+body.green,
+body.theme-green,
+body.matcha,
+body.theme-matcha,
+html[data-theme="green"],
+html[data-theme="matcha"] {
+  --bg: #A5B19A;
+  --panel: #BBC6B2;
+  --panel2: #9EAF97;
+  --text: #273D2A;
+  --muted: #536A52;
+  --accent: #526E50;
+  --line: rgba(39,61,42,.16);
+  --z-online: #365A3A;
+}
+
+/* Плавные, но сдержанные анимации */
+@media (prefers-reduced-motion: no-preference) {
+  .cell,
+  .zc-btn,
+  .zp-button,
+  .zc-admin-add,
+  .zc-item {
+    transition:
+      background-color .2s var(--zp-ease),
+      color .2s var(--zp-ease),
+      opacity .2s var(--zp-ease),
+      transform .2s var(--zp-ease);
+  }
+
+  .cell:active,
+  .zc-btn:active,
+  .zp-button:active,
+  .zc-admin-add:active {
+    transform: scale(.985);
+  }
+
+  #zc-screen.open {
+    animation: zpScreenEnter .24s var(--zp-ease) both;
+  }
+
+  @keyframes zpScreenEnter {
+    from {
+      opacity: 0;
+      transform: translateY(7px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Доступность */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* Компактные экраны */
+@media (max-width: 380px) {
+  .cell {
+    padding: 11px 12px;
+    gap: 10px;
+  }
+
+  #zc-body {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .zc-card {
+    padding: 13px !important;
+  }
+}
+</style>
+<!-- END PROFESSIONAL UI -->
+
+<style>
+/* Zippy — Matcha Olive, немного темнее */
+body[data-theme="green"],
+body[data-theme="matcha"],
+body.green,
+body.theme-green,
+body.matcha,
+body.theme-matcha,
+html[data-theme="green"],
+html[data-theme="matcha"] {
+  --bg: #929F86;
+  --panel: #A8B69D;
+  --panel2: #91A187;
+  --text: #233524;
+  --muted: #465D45;
+  --accent: #476547;
+  --line: rgba(35,53,36,.18);
+  --z-online: #315C35;
+
+  background-color: #929F86;
+  color: #233524;
+}
+</style>
+
+<!-- ZIPPY — DARK MATCHA OLIVE -->
+<style>
+/* Новая тёмная зелёная палитра */
+html.zippy-green-fixed,
+body.zippy-green-fixed,
+html[data-theme="green"],
+body[data-theme="green"],
+html[data-theme="matcha"],
+body[data-theme="matcha"],
+body.green,
+body.matcha,
+body.theme-green,
+body.theme-matcha {
+  --bg: #354735 !important;
+  --panel: #465A43 !important;
+  --panel2: #526A4E !important;
+  --text: #E1E9D9 !important;
+  --muted: #A7C29B !important;
+  --accent: #668361 !important;
+  --line: rgba(225,233,217,.12) !important;
+  --z-online: #A7C29B !important;
+
+  --background: #354735 !important;
+  --surface: #465A43 !important;
+  --primary: #668361 !important;
+  --fg: #E1E9D9 !important;
+}
+
+body.zippy-green-fixed,
+body[data-theme="green"],
+body[data-theme="matcha"],
+body.green,
+body.matcha,
+body.theme-green,
+body.theme-matcha {
+  background: #354735 !important;
+  color: #E1E9D9 !important;
+}
+
+body.zippy-green-fixed #main,
+body.zippy-green-fixed #zc-screen {
+  background: #354735 !important;
+  color: #E1E9D9 !important;
+}
+
+body.zippy-green-fixed .cell,
+body.zippy-green-fixed .zc-card,
+body.zippy-green-fixed .zc-post {
+  background: #465A43 !important;
+  color: #E1E9D9 !important;
+}
+
+body.zippy-green-fixed .zc-btn,
+body.zippy-green-fixed .zp-button {
+  background: #668361 !important;
+  color: #FFFFFF !important;
+}
+
+body.zippy-green-fixed .zippy-online {
+  color: #A7C29B !important;
+}
+</style>
+<!-- END DARK MATCHA -->
+
+<style>
+/* Две кнопки вместо трёх */
+.zippy-profile-two-buttons {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+</style>
+
+<script>
+(function () {
+  function updateProfileButtons() {
+    const elements = [...document.querySelectorAll(
+      'button, a, div'
+    )];
+
+    const settings = elements.find(el =>
+      el.children.length === 0 &&
+      el.textContent.trim() === 'Настройки' &&
+      el.closest('button, a, [onclick]')
+    );
+
+    if (!settings) return;
+
+    const card = settings.closest(
+      'button, a, [onclick]'
+    );
+
+    if (!card) return;
+
+    const parent = card.parentElement;
+    if (!parent) return;
+
+    const labels = parent.textContent;
+
+    if (
+      labels.includes('Выбрать фото') &&
+      labels.includes('Изменить')
+    ) {
+      card.remove();
+      parent.classList.add(
+        'zippy-profile-two-buttons'
+      );
+    }
+  }
+
+  document.addEventListener(
+    'DOMContentLoaded',
+    updateProfileButtons
+  );
+
+  new MutationObserver(updateProfileButtons)
+    .observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+})();
+</script>
+
+<!-- ZIPPY — DEVELOPER CENTER CLEAN DESIGN -->
+<style>
+/* Четыре пункта — единый минималистичный список */
+#main:has(.dev-center) .dev-center,
+#main:has(.developer-center) .developer-center {
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+/* Убираем наложение отдельных карточек */
+#main .dev-center .cell,
+#main .developer-center .cell {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transform: none;
+  min-height: 68px;
+  border: none !important;
+  position: relative;
+}
+
+/* Разделители вместо отдельных рамок */
+#main .dev-center .cell:not(:last-child)::after,
+#main .developer-center .cell:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 76px;
+  right: 0;
+  height: 1px;
+  background: var(--line, rgba(255,255,255,.09));
+}
+
+/* Убираем визуальное нагромождение */
+#main .dev-center .cell .label b,
+#main .developer-center .cell .label b {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Иконки остаются в аккуратных квадратах */
+#main .dev-center .cell .icon,
+#main .developer-center .cell .icon {
+  border-radius: 12px !important;
+  width: 44px;
+  height: 44px;
+}
+
+/* Сдержанная анимация нажатия */
+@media (prefers-reduced-motion: no-preference) {
+  #main .dev-center .cell,
+  #main .developer-center .cell {
+    transition: background-color .18s ease;
+  }
+}
+</style>
+<!-- END DEVELOPER CENTER DESIGN -->
+
+<!-- ZIPPY — TELEGRAM STYLE SETTINGS -->
+<style>
+/* Общие блоки настроек */
+.zippy-tg-group {
+  background: var(--panel, #1d2d40);
+  border-radius: 17px;
+  overflow: hidden;
+  margin: 12px 0 15px;
+  padding: 3px 0;
+  box-shadow: none;
+}
+
+/* Строки внутри блока */
+.zippy-tg-group > .cell,
+.zippy-tg-group > button.cell {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  min-height: 61px;
+  padding: 11px 15px;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  transform: none !important;
+  text-align: left;
+}
+
+/* Тонкие разделители */
+.zippy-tg-group > .cell:not(:last-child) {
+  border-bottom: 1px solid
+    var(--line, rgba(255,255,255,.045)) !important;
+}
+
+/* Текст */
+.zippy-tg-group .label {
+  flex: 1;
+  min-width: 0;
+}
+
+.zippy-tg-group .label b {
+  font-size: 15px;
+  font-weight: 550;
+}
+
+.zippy-tg-group .sub {
+  font-size: 12px;
+  opacity: .72;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* Иконки */
+.zippy-tg-group .cell .ico,
+.zippy-tg-group .cell .icon,
+.zippy-tg-group .cell .cell-icon {
+  width: 35px;
+  height: 35px;
+  min-width: 35px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+}
+
+/* Стрелки */
+.zippy-tg-group .chevron {
+  margin-left: auto;
+  opacity: .38;
+  font-size: 17px;
+}
+
+/* Анимация нажатия */
+@media (prefers-reduced-motion: no-preference) {
+  .zippy-tg-group > .cell {
+    transition: background-color .18s ease !important;
+  }
+
+  .zippy-tg-group > .cell:active {
+    background: var(--panel2, #283c52) !important;
+  }
+}
+
+/* Центр разработчика */
+.zippy-tg-group.zippy-dev-classic {
+  border-radius: 17px !important;
+}
+
+/* Компактные экраны */
+@media (max-width: 380px) {
+  .zippy-tg-group > .cell {
+    padding: 10px 12px;
+    gap: 11px;
+  }
+}
+</style>
+
+<script>
+(function () {
+  "use strict";
+
+  const main = document.getElementById("main");
+  if (!main) return;
+
+  /*
+   Объединяем существующие строки настроек
+   в аккуратные группы, сохраняя обработчики.
+  */
+  function applyTelegramStyle() {
+    const groups = main.querySelectorAll(
+      ".settings-group, .settings-section," +
+      ".dev-center, .developer-center," +
+      ".zippy-dev-classic"
+    );
+
+    groups.forEach(group => {
+      group.classList.add("zippy-tg-group");
+    });
+
+    /*
+     Поддержка Центра разработчика,
+     если у него нет специального класса.
+    */
+    const names = [
+      "Пользователи",
+      "Управление ролями",
+      "Ограничения",
+      "Жалобы"
+    ];
+
+    main.querySelectorAll(
+      ".card, .panel, .group, .section"
+    ).forEach(group => {
+      const children = [...group.children];
+
+      const matches = children.filter(el =>
+        names.some(name =>
+          el.textContent.trim().startsWith(name)
+        )
+      );
+
+      if (matches.length === 4) {
+        group.classList.add("zippy-tg-group");
+      }
+    });
+  }
+
+  let scheduled = false;
+
+  const observer = new MutationObserver(() => {
+    if (scheduled) return;
+    scheduled = true;
+
+    requestAnimationFrame(() => {
+      scheduled = false;
+      applyTelegramStyle();
+    });
+  });
+
+  observer.observe(main, {
+    childList: true,
+    subtree: true
+  });
+
+  applyTelegramStyle();
+})();
+</script>
+<!-- END TELEGRAM STYLE SETTINGS -->
+
+<!-- ZIPPY — SETTINGS LIST FIX -->
+<style>
+/* Общий контейнер настроек */
+.zippy-settings-list {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  background: var(--panel, #1d2d40) !important;
+  padding: 4px 0 !important;
+}
+
+/* Убираем вид отдельных карточек */
+.zippy-settings-list > .zippy-settings-row {
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  min-height: 57px !important;
+  padding: 9px 14px !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  transform: none !important;
+  position: relative;
+}
+
+/* Тонкие разделители */
+.zippy-settings-list >
+.zippy-settings-row:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 66px;
+  right: 0;
+  height: 1px;
+  background: var(--line, rgba(255,255,255,.06));
+}
+
+/* Компактные иконки */
+.zippy-settings-row .ico,
+.zippy-settings-row .icon,
+.zippy-settings-row .cell-icon {
+  width: 35px !important;
+  height: 35px !important;
+  min-width: 35px !important;
+  border-radius: 9px !important;
+}
+
+/* Текст */
+.zippy-settings-row .label b {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+}
+
+.zippy-settings-row .chevron {
+  opacity: .4;
+}
+
+/* Плавное нажатие */
+@media (prefers-reduced-motion: no-preference) {
+  .zippy-settings-row {
+    transition: background-color .18s ease !important;
+  }
+
+  .zippy-settings-row:active {
+    background: var(--panel2, #283c52) !important;
+  }
+}
+</style>
+
+<script>
+(function () {
+  "use strict";
+
+  const names = [
+    "Аккаунт",
+    "Конфиденциальность",
+    "Уведомления",
+    "Оформление",
+    "Настройки чатов",
+    "Память и данные",
+    "Язык",
+    "Zippy Premium",
+    "О приложении",
+    "Пользователи",
+    "Управление ролями",
+    "Ограничения",
+    "Жалобы"
+  ];
+
+  function findRows() {
+    const main = document.getElementById("main");
+    if (!main) return;
+
+    const candidates = [
+      ...main.querySelectorAll(
+        "button, .cell, [role='button']"
+      )
+    ];
+
+    const rows = candidates.filter(el => {
+      const text = (el.textContent || "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      return names.some(name =>
+        text === name ||
+        text.startsWith(name + " ")
+      );
+    });
+
+    rows.forEach(row => {
+      row.classList.add("zippy-settings-row");
+
+      const parent = row.parentElement;
+      if (!parent) return;
+
+      const siblings = [...parent.children];
+
+      const matching = siblings.filter(el =>
+        el.classList.contains("zippy-settings-row")
+      );
+
+      if (matching.length >= 2) {
+        parent.classList.add("zippy-settings-list");
+      }
+    });
+  }
+
+  const main = document.getElementById("main");
+
+  if (main) {
+    let scheduled = false;
+
+    new MutationObserver(() => {
+      if (scheduled) return;
+      scheduled = true;
+
+      requestAnimationFrame(() => {
+        scheduled = false;
+        findRows();
+      });
+    }).observe(main, {
+      childList: true,
+      subtree: true
+    });
+
+    findRows();
+  }
+})();
+</script>
+<!-- END SETTINGS LIST FIX -->
